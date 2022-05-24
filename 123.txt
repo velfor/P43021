@@ -1,0 +1,72 @@
+void World::handleCollisions()
+{
+	for (auto& ball : mBalls)
+	{
+		auto ballRect = ball->getBoundingRect();
+		float ballWidth = ballRect.width;
+		float ballHeight = ballRect.height;
+		float ballLeft = ballRect.left;
+		float ballTop = ballRect.top;
+
+		// Create four contact points for the ball
+		sf::Vector2f ballLeftPoint(ballLeft, ballTop + (ballHeight / 2.f));			// Middle of left side
+		sf::Vector2f ballRightPoint(ballLeft + ballWidth, ballTop + (ballHeight / 2.f));	// Middle of right side
+		sf::Vector2f ballTopPoint(ballLeft + (ballWidth / 2.f), ballTop);			// Middle of top
+		sf::Vector2f ballBottomPoint(ballLeft + (ballWidth / 2.f), ballTop + ballHeight);	// Middle of bottom
+
+		// Ball/Paddle collisions
+		auto playerRect = mPlayer.getBoundingRect();
+		if (ballRect.intersects(playerRect))
+		{
+			// How the paddle velocity will affect the ball bounce
+			float angleChangeFactor = 0;
+			if (mPlayer.getVelocity().x > 0)
+				angleChangeFactor = -10.f;
+			else if (mPlayer.getVelocity().x < 0)
+				angleChangeFactor = 10.f;
+
+			// Adjust Ball angle for bounce
+			if (playerRect.contains(ballBottomPoint))
+			{
+				ball->setAngle(360.f - ball->getAngle() + angleChangeFactor);
+				ball->setPosition(ball->getPosition().x, mPlayer.getPosition().y - (mPlayer.getBoundingRect().height / 2.f) - (ballHeight / 2.f));
+			}
+			else if (playerRect.contains(ballLeftPoint) || playerRect.contains(ballRightPoint))
+				ball->setAngle(180.f - ball->getAngle() + angleChangeFactor);
+		}
+
+		// Ball/Brick collisions
+		for (auto itr = mBricks.begin(); itr != mBricks.end();)
+		{
+			auto brickRect = (*itr)->getBoundingRect();
+			float ballAngle(ball->getAngle());
+
+			if (ballRect.intersects(brickRect))
+			{
+				// If contact is on the left or right of the ball, adjust angle properly
+				if (brickRect.contains(ballLeftPoint) || brickRect.contains(ballRightPoint))
+					ball->setAngle(180.f - ball->getAngle());
+				// If contact is on the top or top of the ball, adjust angle properly
+				else if (brickRect.contains(ballTopPoint) || brickRect.contains(ballBottomPoint))
+					ball->setAngle(360.f - ball->getAngle());
+			}
+
+			// If the angle of the ball changed, then we know a brick was hit. We damage that brick and if it is destroyed,
+			// if so, we remove the brick from our brick container.
+			if (ballAngle != ball->getAngle())
+			{
+				// Play a random bounce sound
+				ServiceLocator::getSoundPlayer().play(static_cast<Sounds::ID>(randomInt(Sounds::BallCount)));
+				(*itr)->damage(ball->getPower());
+				if ((*itr)->isDestroyed())
+					mBricks.erase(itr);
+				break;
+			}
+			else
+				itr++;
+		}
+	}
+}
+
+
+

@@ -1,0 +1,13 @@
+1. Найти решения уравнения 
+a*x^3 + b*x= 0 при заданных a и b.
+(a > 0 и b < 0 )
+x1 = -sqrt(-b/a) x2 = sqrt(-b/a) x3 = 0
+
+x2 = x*x
+x6 = x2*x2*x2
+
+/
+%
+Решали integer
+
+GitHub.com velfors@gmail.com Xtvmru3gvne
