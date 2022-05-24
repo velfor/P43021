@@ -1,0 +1,30 @@
+#pragma once
+#include "SFML/Graphics.hpp"
+#include "const.h"
+
+class Obstacle {
+private:
+	sf::Texture texture;
+	sf::Sprite sprite;
+	sf::Vector2f speed = sf::Vector2f(0.0f, 3.0f);
+	size_t score = 0;
+public:
+	Obstacle() {
+		texture.loadFromFile("obs.png");
+		sprite.setTexture(texture);
+		sprite.setScale(0.3f, 0.3f);
+		score = 0;
+	}
+	sf::Sprite getSprite() { return sprite; }
+	void init(float startx, float starty) { sprite.setPosition(startx, starty); }
+	sf::FloatRect getHitBox() { return sprite.getGlobalBounds(); }
+	void update() {
+		sprite.move(speed);
+		if (sprite.getPosition().y >= WINDOW_HEIGHT) {
+			int  line = rand() % 4;
+			sprite.setPosition(line*150.f, 0);
+			score++;
+		}
+	}
+	size_t getScore() { return score; }
+};
